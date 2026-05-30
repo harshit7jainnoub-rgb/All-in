@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- QR CODE CDN -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+<!-- TALLY COMPUTATION -->
+{% set ns_tally = namespace(total_buyin=0, total_cashout=0) %}
+{% for p in game.players %}
+    {% set ns_tally.total_buyin = ns_tally.total_buyin + p.buyin|int %}
+    {% set ns_tally.total_cashout = ns_tally.total_cashout + p.get("cashout", 0)|int %}
+{% endfor %}
+{% set is_balanced = (ns_tally.total_buyin == ns_tally.total_cashout) %}
+
+<div class="max-w-6xl mx-auto">
+
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <h1 class="cinzel text-5xl font-extrabold text-white mb-2">
+                {{ game.name }}
+            </h1>
+            <p class="text-gray-400 text-sm tracking-wider uppercase">
+                HOST LOBBY • CODE: <span class="text-amber-400 font-bold" id="game-code">{{ game.code }}</span>
+            </p>
+        </div>
+        
+        <div class="flex gap-3 items-center">
+            {% if game.get("status", "active") == 'ended' %}
+            <div class="px-5 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 font-bold flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                GAME ENDED
+            </div>
+            {% else %}
+            <div class="px-5 py-3 rounded-2xl bg-[#d4a017]/10 border border-[#d4a017]/20 text-[#ffcc33] font-bold flex items-center gap-2 select-none">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+                ACTIVE LOBBY
+            </div>
+            
+            {% if is_balanced %}
+            <form action="/end-game/{{ game.code }}" method="POST" onsubmit="return confirm('Are you sure you want to end this game? It will be archived and players will no longer be able to cash out.')">
+                <button type="submit" class="px-6 py-3 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold transition-all shadow-lg shadow-rose-600/20">
+                    END GAME
+                </button>
+            </form>
+            {% else %}
+            <div class="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-gray-500 text-sm font-semibold select-none cursor-not-allowed" title="Tally buy-ins and cash-outs to end game">
+                Tally Required
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- TALLY WARNING BANNER -->
+    {% if game.get("status", "active") != 'ended' and not is_balanced %}
+    <div class="mb-8 p-5 rounded-[24px] bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-400 animate-pulse shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <span>
+                <strong>Table Unbalanced:</strong> Total Cash Out (₹{{ ns_tally.total_cashout }}) does not match Total Pool (₹{{ ns_tally.total_buyin }}). Adjust player cash-outs so the game can be ended and settled.
+            </span>
+        </div>
+        <div class="text-xs font-mono bg-red-500/20 px-3 py-1.5 rounded-xl shrink-0 font-bold">
+            Diff: ₹{{ (ns_tally.total_buyin - ns_tally.total_cashout) | abs }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- DIVIDER -->
+    <div class="flex items-center mb-10">
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+        <div class="mx-6 text-[#d4a017]">✦ ◆ ✦</div>
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- LEFT COLUMN: PLAYERS & POOL (2 COL WIDTH ON LARGE SCREENS) -->
+        <div class="lg:col-span-2 space-y-8">
+            
+            <!-- POOL CARD -->
+            <div class="glass p-8 rounded-[32px] border border-[#2b210f] flex justify-between items-center relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl"></div>
+                <div>
+                    <p class="text-gray-400 text-xs uppercase tracking-widest mb-1">Total Table Pool</p>
+                    <h2 class="cinzel text-5xl font-black text-emerald-400">₹{{ pool }}</h2>
+                </div>
+                <div class="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- PLAYERS LIST -->
+            <div class="glass p-8 rounded-[32px] border border-white/5">
+                <h3 class="cinzel text-2xl font-bold mb-6">Players Joined</h3>
+                
+                {% if player_results %}
+                <div class="space-y-4">
+                    {% for player in player_results | sort(attribute='buyin', reverse=true) %}
+                    <div class="p-2 rounded-2xl bg-[#05070d]/30 border border-white/5">
+                        <!-- Player Header Row -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-[#05070d]/40 rounded-xl gap-4">
+                            <!-- Player Info -->
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center font-mono font-bold text-sm text-gray-400">
+                                    {% if loop.index == 1 %}
+                                    <span class="text-yellow-500 text-lg" title="Chip Leader">🥇</span>
+                                    {% elif loop.index == 2 %}
+                                    <span class="text-slate-400 text-lg">🥈</span>
+                                    {% elif loop.index == 3 %}
+                                    <span class="text-amber-700 text-lg">🥉</span>
+                                    {% else %}
+                                    #{{ loop.index }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-white mb-1">{{ player.name }}</h4>
+                                    <div class="flex items-center gap-4 text-xs text-gray-400">
+                                        <span>Buy-In: <strong class="text-amber-400">₹{{ player.buyin }}</strong></span>
+                                        <span>•</span>
+                                        <span>Cash Out: <strong class="text-blue-400">₹{{ player.cashout }}</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Result & Admin Actions -->
+                            <div class="flex items-center justify-between sm:justify-end gap-6">
+                                <div>
+                                    {% if player.result >= 0 %}
+                                    <span class="text-sm font-semibold uppercase text-emerald-400 tracking-wider">+₹{{ player.result }}</span>
+                                    {% else %}
+                                    <span class="text-sm font-semibold uppercase text-rose-500 tracking-wider">-₹{{ player.result | abs }}</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="flex items-center gap-2">
+                                    {% if game.get("status", "active") != 'ended' %}
+                                    <button
+                                        onclick="toggleInlineEdit('{{ player.name }}')"
+                                        class="px-3 py-2 rounded-xl bg-[#d4a017]/10 hover:bg-[#d4a017]/25 text-[#ffcc33] text-xs font-bold transition-all border border-[#d4a017]/20"
+                                    >
+                                        Edit
+                                    </button>
+                                    {% endif %}
+                                    
+                                    <a
+                                        href="/secure-player/{{ game.code }}/{{ player.token }}"
+                                        target="_blank"
+                                        class="px-4 py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 text-xs font-bold transition-all border border-purple-500/20"
+                                    >
+                                        Dashboard
+                                    </a>
+                                    
+                                    <button
+                                        onclick="copyLink('{{ player.name }}', '{{ window.location.origin if window else '' }}/secure-player/{{ game.code }}/{{ player.token }}')"
+                                        class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all border border-white/5"
+                                        title="Copy private invite link"
+                                        id="btn-copy-{{ player.name }}"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collapsible Admin Edit Container -->
+                        {% if game.get("status", "active") != 'ended' %}
+                        <div id="admin-edit-{{ player.name }}" class="hidden p-5 rounded-xl bg-white/5 border border-white/10 mt-2 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h5 class="text-xs uppercase tracking-wider text-amber-400 font-bold">Admin Override: {{ player.name }}</h5>
+                                <button onclick="toggleInlineEdit('{{ player.name }}')" class="text-xs text-gray-500 hover:text-white">Cancel</button>
+                            </div>
+                            <form action="/admin/update-player" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                                <input type="hidden" name="code" value="{{ game.code }}">
+                                <input type="hidden" name="player_name" value="{{ player.name }}">
+                                
+                                <div>
+                                    <label class="block mb-2 text-[10px] text-gray-400 uppercase tracking-widest font-bold">Buy-In</label>
+                                    <input type="number" name="buyin" required min="0" value="{{ player.buyin }}" class="w-full px-4 py-2.5 rounded-xl bg-[#05070d] border border-[#1a2230] text-white focus:outline-none focus:border-[#d4a017] text-sm font-bold text-center">
+                                </div>
+                                
+                                <div>
+                                    <label class="block mb-2 text-[10px] text-gray-400 uppercase tracking-widest font-bold">Cash Out</label>
+                                    <input type="number" name="cashout" required min="0" value="{{ player.cashout }}" class="w-full px-4 py-2.5 rounded-xl bg-[#05070d] border border-[#1a2230] text-white focus:outline-none focus:border-[#d4a017] text-sm font-bold text-center">
+                                </div>
+                                
+                                <button type="submit" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-bold text-sm transition-all shadow-lg shadow-amber-500/10">
+                                    Save Changes
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-center py-6">No players joined yet. Share the code or QR below to invite players!</p>
+                {% endif %}
+            </div>
+
+            <!-- SETTLEMENT PREVIEW -->
+            <div class="glass p-8 rounded-[32px] border border-white/5">
+                <h3 class="cinzel text-2xl font-bold text-white mb-2">Settlement Preview</h3>
+                <p class="text-xs text-gray-400 mb-6">Optimized settlement transactions generated automatically based on live balances.</p>
+                
+                {% if settlements %}
+                <div class="space-y-4">
+                    {% for settlement in settlements %}
+                    <div class="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 flex flex-col gap-2">
+                        <div class="flex justify-between items-center text-sm font-semibold">
+                            <span class="text-rose-400">{{ settlement.from }}</span>
+                            <span class="text-gray-500 font-normal">pays</span>
+                            <span class="text-emerald-400">{{ settlement.to }}</span>
+                        </div>
+                        <div class="text-center bg-[#05070d]/80 py-2 rounded-xl border border-emerald-500/10">
+                            <strong class="text-emerald-400 text-base font-bold">₹{{ settlement.amount }}</strong>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-center py-6 text-sm">No settlement recommendations available yet (payouts are fully balanced or no cash-outs submitted).</p>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: QR JOIN & HOST CONTROLS -->
+        <div class="space-y-8">
+            
+            <!-- HOST PARTICIPATION CARD -->
+            <div class="glass p-8 rounded-[32px] border border-white/5 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl"></div>
+                <h3 class="cinzel text-xl font-bold text-white mb-2">Host Player Dashboard</h3>
+                
+                {% set ns = namespace(host_player=none) %}
+                {% if host_player_name %}
+                    {% for p in game.players %}
+                        {% if p.name == host_player_name %}
+                            {% set ns.host_player = p %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                {% if ns.host_player %}
+                <div class="mt-4 p-5 rounded-2xl bg-[#d4a017]/5 border border-[#d4a017]/10 text-center">
+                    <p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Playing As</p>
+                    <h4 class="text-2xl font-black text-amber-400 cinzel mb-4">{{ ns.host_player.name }}</h4>
+                    <a
+                        href="/secure-player/{{ game.code }}/{{ ns.host_player.token }}"
+                        target="_blank"
+                        class="block w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-[#d4a017] hover:from-amber-600 hover:to-[#b8860b] text-black font-extrabold text-sm transition-all shadow-lg shadow-amber-500/10 text-center"
+                    >
+                        Open Your Dashboard
+                    </a>
+                </div>
+                {% else %}
+                <p class="text-xs text-slate-400 mb-6">Are you also playing in this game? Register yourself to open your personal live player dashboard.</p>
+                <form action="/host-join" method="POST" class="space-y-4">
+                    <input type="hidden" name="code" value="{{ game.code }}">
+                    <input
+                        type="text"
+                        name="player_name"
+                        placeholder="Your Player Name (e.g. Harshit)"
+                        required
+                        class="w-full px-4 py-3 rounded-xl bg-[#05070d] border border-[#1a2230] text-white focus:outline-none focus:border-[#d4a017] text-sm text-center"
+                    >
+                    <button class="w-full py-3 rounded-xl bg-transparent border border-[#d4a017] text-[#ffcc33] font-bold text-sm hover:bg-[#d4a017]/10 transition-all">
+                        Join Game as Player
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- QR CODE JOIN CARD -->
+            {% if game.get("status", "active") != 'ended' %}
+            <div class="glass p-8 rounded-[32px] border border-[#3b2a0d] text-center relative overflow-hidden">
+                <h3 class="cinzel text-xl font-bold text-white mb-2">Scan to Join</h3>
+                <p class="text-xs text-gray-400 mb-6">Players can scan this QR code to register and enter the game instantly.</p>
+                
+                <div class="inline-block p-4 bg-white rounded-3xl mb-6 shadow-xl" id="qrcode-container">
+                    <!-- QR Code elements will be injected here -->
+                </div>
+                
+                <div class="bg-[#05070d] py-3 px-4 rounded-xl border border-white/5 flex items-center justify-between">
+                    <span class="text-gray-400 text-xs uppercase tracking-wider">Lobby Code</span>
+                    <strong class="text-amber-400 text-lg tracking-widest font-mono">{{ game.code }}</strong>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- CLIPBOARD & QR GENERATION LOGIC -->
+<script>
+    // Toggle inline dashboard editor for admins
+    function toggleInlineEdit(playerName) {
+        const container = document.getElementById('admin-edit-' + playerName);
+        if (container) {
+            container.classList.toggle('hidden');
+        }
+    }
+
+    // Copy private dashboard link
+    function copyLink(playerName, url) {
+        navigator.clipboard.writeText(url).then(function() {
+            const btn = document.getElementById('btn-copy-' + playerName);
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`;
+            btn.classList.add('border-emerald-500/30', 'bg-emerald-500/10');
+            setTimeout(function() {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('border-emerald-500/30', 'bg-emerald-500/10');
+            }, 2000);
+        }).catch(function(err) {
+            console.error('Could not copy link:', err);
+        });
+    }
+
+    // QR Code Generation
+    document.addEventListener("DOMContentLoaded", function() {
+        const qrContainer = document.getElementById('qrcode-container');
+        if (qrContainer) {
+            const code = document.getElementById('game-code').innerText.trim();
+            const joinUrl = window.location.origin + '/join?code=' + code;
+            
+            // Generate QR Code with type=4, errorCorrection=M
+            const qr = qrcode(4, 'M');
+            qr.addData(joinUrl);
+            qr.make();
+            
+            // Create image element
+            qrContainer.innerHTML = qr.createImgTag(5, 12); // size=5, margin=12
+            
+            // Style the resulting image
+            const img = qrContainer.querySelector('img');
+            if (img) {
+                img.classList.add('w-32', 'h-32', 'mx-auto', 'block');
+            }
+        }
+    });
+</script>
+
+<!-- WEBSOCKET REAL-TIME SYNC -->
+<script>
+    (function() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/live-game/{{ game.code }}`;
+        
+        function connectWS() {
+            const socket = new WebSocket(wsUrl);
+            
+            socket.onmessage = function(event) {
+                if (event.data === "update") {
+                    console.log("Real-time update received! Reloading lobby...");
+                    window.location.reload();
+                }
+            };
+            
+            socket.onclose = function() {
+                console.log("WebSocket connection closed. Reconnecting in 3s...");
+                setTimeout(connectWS, 3000);
+            };
+            
+            socket.onerror = function(err) {
+                console.error("WebSocket error:", err);
+                socket.close();
+            };
+        }
+        
+        connectWS();
+    })();
+</script>
+
+{% endblock %}

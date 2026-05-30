@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- PAGE BACKGROUND -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
+    <img
+        src="/static/hero-banner.png"
+        class="w-full h-full object-cover opacity-[0.06] scale-110 select-none pointer-events-none"
+    >
+    <div class="absolute inset-0 bg-[#020305]/92"></div>
+</div>
+
+<!-- HEADER -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <div>
+        <h1 class="cinzel text-5xl font-extrabold text-white mb-2">
+            COMMAND CENTER
+        </h1>
+        <p class="text-gray-400 text-sm tracking-wider uppercase">
+            Platform Overview & Live Table Operations
+        </p>
+    </div>
+    
+    <div class="glass px-5 py-3 rounded-2xl border border-[#d4a017]/20 flex items-center gap-3">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#d4a017] shadow-lg shadow-[#d4a017]/40 animate-pulse"></span>
+        <span class="cinzel text-sm font-semibold text-amber-400 uppercase tracking-widest">
+            Royal Club
+        </span>
+    </div>
+</div>
+
+<!-- DIVIDER -->
+<div class="flex items-center mb-10">
+    <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+    <div class="mx-6 text-[#d4a017] select-none">✦ ◆ ✦</div>
+    <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+</div>
+
+<!-- STATS GRID -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+
+    <!-- TOTAL SESSIONS -->
+    <div class="dashboard-card glass rounded-[30px] border border-[#2b210f] p-6 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-[#d4a017]/5 rounded-full blur-xl"></div>
+        <div>
+            <div class="w-12 h-12 rounded-xl border border-[#d4a017]/30 flex items-center justify-center mb-4 bg-[#d4a017]/5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#ffcc33]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M8 2v4M16 2v4M3 10h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" />
+                </svg>
+            </div>
+            <p class="text-gray-400 text-xs uppercase tracking-[3px]">Total Sessions</p>
+        </div>
+        <h2 class="cinzel text-5xl font-black text-[#ffcc33] mt-4">
+            {{ total_sessions }}
+        </h2>
+    </div>
+
+    <!-- TOTAL PLAYERS -->
+    <div class="dashboard-card glass rounded-[30px] border border-[#2b210f] p-6 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-amber-500/5 rounded-full blur-xl"></div>
+        <div>
+            <div class="w-12 h-12 rounded-xl border border-amber-500/30 flex items-center justify-center mb-4 bg-amber-500/5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                    <circle cx="9" cy="7" r="4" />
+                </svg>
+            </div>
+            <p class="text-gray-400 text-xs uppercase tracking-[3px]">Total Players</p>
+        </div>
+        <h2 class="cinzel text-5xl font-black text-amber-400 mt-4">
+            {{ total_players }}
+        </h2>
+    </div>
+
+    <!-- BIGGEST WINNER -->
+    <div class="dashboard-card glass rounded-[30px] border border-[#2b210f] p-6 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-500/5 rounded-full blur-xl"></div>
+        <div>
+            <div class="w-12 h-12 rounded-xl border border-emerald-500/30 flex items-center justify-center mb-4 bg-emerald-500/5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 17l6-6 4 4 8-8M14 7h7v7" />
+                </svg>
+            </div>
+            <p class="text-gray-400 text-xs uppercase tracking-[3px]">Biggest Winner</p>
+        </div>
+        <div>
+            <h2 class="cinzel text-2xl font-bold text-white truncate mt-4" title="{{ biggest_winner }}">
+                {{ biggest_winner }}
+            </h2>
+            {% if biggest_winner != "N/A" %}
+            <p class="text-emerald-400 font-mono text-sm font-extrabold mt-1">+₹{{ winner_amount }}</p>
+            {% else %}
+            <p class="text-gray-500 font-mono text-xs mt-1">No data available</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- BIGGEST LOSER -->
+    <div class="dashboard-card glass rounded-[30px] border border-[#2b210f] p-6 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-rose-500/5 rounded-full blur-xl"></div>
+        <div>
+            <div class="w-12 h-12 rounded-xl border border-rose-500/30 flex items-center justify-center mb-4 bg-rose-500/5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 7l6 6 4-4 8 8M14 17h7v-7" />
+                </svg>
+            </div>
+            <p class="text-gray-400 text-xs uppercase tracking-[3px]">Biggest Loser</p>
+        </div>
+        <div>
+            <h2 class="cinzel text-2xl font-bold text-white truncate mt-4" title="{{ biggest_loser }}">
+                {{ biggest_loser }}
+            </h2>
+            {% if biggest_loser != "N/A" %}
+            <p class="text-rose-400 font-mono text-sm font-extrabold mt-1">-₹{{ loser_amount | abs }}</p>
+            {% else %}
+            <p class="text-gray-500 font-mono text-xs mt-1">No data available</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<!-- ACTIVE LIVE GAMES -->
+{% if active_live_games %}
+<div class="mb-10">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="cinzel text-3xl font-bold text-white flex items-center gap-3">
+            <span class="w-3 h-3 rounded-full bg-[#d4a017] animate-ping"></span>
+            Active Live Tables
+        </h2>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for game in active_live_games %}
+        <div class="glass p-6 rounded-[28px] border border-[#d4a017]/30 flex justify-between items-center dashboard-card relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-24 h-24 bg-[#d4a017]/5 rounded-full blur-2xl"></div>
+            <div>
+                <span class="text-gray-500 text-[10px] uppercase tracking-widest font-mono">LOBBY CODE: {{ game.code }}</span>
+                <h3 class="cinzel text-2xl font-bold text-white mt-1">{{ game.name }}</h3>
+                <div class="flex gap-4 mt-3 text-xs text-slate-400">
+                    <span>Pool: <strong class="text-emerald-400">₹{{ game.pool }}</strong></span>
+                    <span>•</span>
+                    <span>Players: <strong class="text-amber-400">{{ game.player_count }}</strong></span>
+                </div>
+            </div>
+            
+            <a href="/live-game/{{ game.code }}" class="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-[#d4a017] hover:from-amber-600 hover:to-[#b8860b] text-black font-extrabold text-sm transition-all shadow-lg shadow-[#d4a017]/20 shrink-0">
+                Join Lobby
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- SECONDARY ANALYTICS (STANDINGS & RECENT SESSION) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- STANDINGS LEADERBOARD (2/3 WIDTH) -->
+    <div class="lg:col-span-2 glass p-8 rounded-[32px] border border-white/5 flex flex-col justify-between">
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="cinzel text-2xl font-bold text-white">Lifetime Standings</h3>
+                    <p class="text-xs text-gray-400 mt-1">Leaderboard of all-time player cumulative earnings.</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-[#d4a017]/10 border border-[#d4a017]/20 flex items-center justify-center">
+                    <span class="text-lg">🏆</span>
+                </div>
+            </div>
+            
+            {% if leaderboard %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-white/5 text-gray-500 text-[10px] uppercase tracking-widest font-bold">
+                            <th class="py-3 pl-4">Rank</th>
+                            <th class="py-3">Player</th>
+                            <th class="py-3 text-right pr-4">Net Result</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for player_name, net_val in leaderboard %}
+                        <tr class="hover:bg-white/[0.02] transition-colors">
+                            <td class="py-4 pl-4 font-mono text-sm font-bold text-gray-400">
+                                {% if loop.index == 1 %}
+                                <span class="text-yellow-500 text-lg flex items-center gap-1.5" title="Grand Champion">👑 1</span>
+                                {% elif loop.index == 2 %}
+                                <span class="text-slate-400 text-lg flex items-center gap-1.5">🥈 2</span>
+                                {% elif loop.index == 3 %}
+                                <span class="text-amber-700 text-lg flex items-center gap-1.5">🥉 3</span>
+                                {% else %}
+                                <span class="pl-5">#{{ loop.index }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 font-bold text-white">{{ player_name }}</td>
+                            <td class="py-4 text-right pr-4 font-mono font-bold">
+                                {% if net_val >= 0 %}
+                                <span class="text-emerald-400">+₹{{ net_val }}</span>
+                                {% else %}
+                                <span class="text-rose-500">-₹{{ net_val | abs }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <p class="text-gray-500 text-sm">No standings logged yet. Add a session to see players here!</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if leaderboard %}
+        <div class="border-t border-white/5 pt-5 mt-6 text-center">
+            <a href="/totals" class="text-xs text-amber-400 hover:text-amber-300 font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-1">
+                View Full Standings
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- RECENT SESSION SUMMARY (1/3 WIDTH) -->
+    <div class="glass p-8 rounded-[32px] border border-white/5 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl"></div>
+        <div>
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <span class="text-gray-500 text-[10px] uppercase tracking-widest font-mono">Recent Activity</span>
+                    <h3 class="cinzel text-2xl font-bold text-white mt-1">LATEST GAME</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                    <span class="text-lg">♠️</span>
+                </div>
+            </div>
+
+            {% if recent_session %}
+            <div class="space-y-4">
+                <div class="p-4 rounded-2xl bg-[#05070d]/50 border border-white/5 space-y-1">
+                    <p class="text-gray-400 text-[9px] uppercase tracking-wider font-bold">Session Name</p>
+                    <h4 class="text-base font-bold text-white truncate">{{ recent_session.session_name }}</h4>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 rounded-2xl bg-[#05070d]/50 border border-white/5 space-y-1">
+                        <p class="text-gray-400 text-[9px] uppercase tracking-wider font-bold">Date</p>
+                        <h4 class="text-xs font-bold text-white truncate">{{ recent_session.session_date }}</h4>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-[#05070d]/50 border border-white/5 space-y-1">
+                        <p class="text-gray-400 text-[9px] uppercase tracking-wider font-bold">Players</p>
+                        <h4 class="text-xs font-bold text-white truncate">{{ recent_session.players | length }} Joined</h4>
+                    </div>
+                </div>
+
+                <!-- Top performer breakdown inside recent session -->
+                {% set ns_recent = namespace(session_winner=none, max_win=-999999) %}
+                {% for p in recent_session.players %}
+                    {% if p.result|float > ns_recent.max_win|float %}
+                        {% set ns_recent.session_winner = p %}
+                        {% set ns_recent.max_win = p.result|float %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if ns_recent.session_winner %}
+                <div class="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 flex justify-between items-center mt-2">
+                    <div>
+                        <p class="text-gray-400 text-[9px] uppercase tracking-wider font-bold mb-0.5">Session MVP</p>
+                        <span class="text-sm font-extrabold text-white">{{ ns_recent.session_winner.name }}</span>
+                    </div>
+                    <strong class="text-emerald-400 font-mono text-sm">+₹{{ ns_recent.session_winner.result }}</strong>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="text-center py-12 space-y-4">
+                <p class="text-gray-500 text-sm">No historical sessions recorded yet.</p>
+                <a href="/add-session" class="inline-block px-4 py-2 rounded-xl bg-[#d4a017]/10 hover:bg-[#d4a017]/20 border border-[#d4a017]/30 text-[#ffcc33] text-xs font-bold transition-all uppercase tracking-wider">
+                    Add First Session
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if recent_session %}
+        <div class="border-t border-white/5 pt-5 mt-6 text-center">
+            <a href="/history" class="text-xs text-[#ffcc33] hover:text-[#d4a017] font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-1">
+                View Session Log
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

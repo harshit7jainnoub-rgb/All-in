@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}
+Leaderboard - ALL IN
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE BACKGROUND -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
+    <img
+        src="/static/hero-banner.png"
+        class="w-full h-full object-cover opacity-[0.05] scale-110 select-none pointer-events-none"
+    >
+    <div class="absolute inset-0 bg-[#020305]/92"></div>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <p class="text-amber-400 uppercase tracking-[0.3em] text-xs mb-3">
+                Platform Standings
+            </p>
+            <h1 class="cinzel text-5xl font-black text-white">
+                Player Leaderboard
+            </h1>
+        </div>
+        
+        <div class="glass px-5 py-3 rounded-2xl border border-white/5 flex items-center gap-2">
+            <span class="text-xs text-gray-400">Total Players:</span>
+            <span class="text-amber-400 font-bold font-mono">{{ totals | length }}</span>
+        </div>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="flex items-center mb-10 select-none">
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+        <div class="mx-6 text-[#d4a017]">✦ ◆ ✦</div>
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="glass border border-white/5 rounded-[28px] p-5 mb-10 shadow-2xl relative overflow-hidden">
+        <div class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </div>
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search player name..."
+            class="w-full bg-[#05070d]/80 border border-[#1a2230] rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-amber-500 font-medium transition-all"
+            onkeyup="filterPlayers()"
+        >
+    </div>
+
+    {% if totals %}
+
+    <!-- PODIUM -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        {% for player, amount in totals[:3] %}
+        <a href="/player/{{ player }}" class="block group hover:scale-[1.02] transition-all">
+            <div class="glass border relative overflow-hidden
+                {% if loop.index == 1 %}
+                border-yellow-500/30 shadow-lg shadow-yellow-500/5 bg-gradient-to-b from-yellow-500/[0.03] to-transparent
+                {% elif loop.index == 2 %}
+                border-slate-400/25 shadow-lg shadow-slate-400/5
+                {% else %}
+                border-amber-700/25 shadow-lg shadow-amber-700/5
+                {% endif %}
+                rounded-[32px] p-8 text-center"
+            >
+                <div class="text-5xl mb-4 select-none">
+                    {% if loop.index == 1 %}
+                    👑
+                    {% elif loop.index == 2 %}
+                    🥈
+                    {% else %}
+                    🥉
+                    {% endif %}
+                </div>
+
+                <h2 class="text-2xl font-black text-white group-hover:text-amber-400 transition-colors mb-2 cinzel">
+                    {{ player }}
+                </h2>
+                
+                <p class="text-xs text-gray-500 uppercase tracking-widest mb-3">Rank #{{ loop.index }}</p>
+
+                <p class="text-3xl font-black font-mono
+                    {% if amount >= 0 %}
+                    text-emerald-400
+                    {% else %}
+                    text-rose-500
+                    {% endif %}"
+                >
+                    {% if amount >= 0 %}+{% endif %}₹{{ amount }}
+                </p>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div id="leaderboard" class="space-y-4">
+        {% for player, amount in totals %}
+        <a
+            href="/player/{{ player }}"
+            class="player-card block group"
+            data-player="{{ player|lower }}"
+        >
+            <div class="glass border border-white/5 group-hover:border-[#d4a017]/35 rounded-[28px] p-6 flex justify-between items-center transition-all shadow-xl">
+                <!-- LEFT -->
+                <div class="flex items-center gap-6">
+                    <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-mono font-bold text-sm text-gray-400 group-hover:border-amber-500/30 group-hover:text-amber-400 transition-all">
+                        {% if loop.index == 1 %}
+                        🥇
+                        {% elif loop.index == 2 %}
+                        🥈
+                        {% elif loop.index == 3 %}
+                        🥉
+                        {% else %}
+                        #{{ loop.index }}
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <p class="text-gray-500 text-[10px] uppercase tracking-widest mb-0.5">Player</p>
+                        <h2 class="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">
+                            {{ player }}
+                        </h2>
+                    </div>
+                </div>
+
+                <!-- RIGHT -->
+                <div class="text-right">
+                    <p class="text-gray-500 text-[10px] uppercase tracking-widest mb-0.5">Lifetime Net</p>
+                    <h2 class="text-2xl font-black font-mono
+                        {% if amount >= 0 %}
+                        text-emerald-400
+                        {% else %}
+                        text-rose-500
+                        {% endif %}"
+                    >
+                        {% if amount >= 0 %}+{% endif %}₹{{ amount }}
+                    </h2>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="glass border border-white/5 rounded-[32px] p-20 text-center shadow-2xl">
+        <h2 class="cinzel text-4xl font-extrabold mb-4 text-gray-400">
+            No Records Logged
+        </h2>
+        <p class="text-slate-500">
+            Platform leaderboard statistics will generate once sessions are added.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function filterPlayers() {
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const cards = document.querySelectorAll(".player-card");
+
+    cards.forEach(card => {
+        const player = card.dataset.player;
+        if (player.includes(search)) {
+            card.style.display = "block";
+        } else {
+            card.style.display = "none";
+        }
+    });
+}
+</script>
+
+{% endblock %}

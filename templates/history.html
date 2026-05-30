@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}
+History - ALL IN
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE BACKGROUND -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
+    <img
+        src="/static/hero-banner.png"
+        class="w-full h-full object-cover opacity-[0.05] scale-110 select-none pointer-events-none"
+    >
+    <div class="absolute inset-0 bg-[#020305]/92"></div>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <p class="text-amber-400 uppercase tracking-[0.3em] text-xs mb-3">
+                Session Ledger
+            </p>
+            <h1 class="cinzel text-5xl font-black text-white">
+                Session History
+            </h1>
+        </div>
+        
+        <div class="glass px-5 py-3 rounded-2xl border border-white/5 flex items-center gap-2">
+            <span class="text-xs text-gray-400">Archived Games:</span>
+            <span class="text-amber-400 font-bold font-mono">{{ sessions | length }}</span>
+        </div>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="flex items-center mb-10 select-none">
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+        <div class="mx-6 text-[#d4a017]">✦ ◆ ✦</div>
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="glass border border-white/5 rounded-[28px] p-5 mb-10 shadow-2xl relative overflow-hidden">
+        <div class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </div>
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search player name..."
+            class="w-full bg-[#05070d]/80 border border-[#1a2230] rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-amber-500 font-medium transition-all"
+            onkeyup="filterSessions()"
+        >
+    </div>
+
+    {% if sessions %}
+    <div id="sessions-container" class="space-y-8">
+        {% for session in sessions|reverse %}
+        {% set ns = namespace(total_buyin=0) %}
+        {% for player in session.players %}
+            {% set ns.total_buyin = ns.total_buyin + (player.buyin|float) %}
+        {% endfor %}
+
+        <div
+            class="session-card glass border border-white/5 rounded-[32px] overflow-hidden shadow-2xl relative transition-all duration-300 hover:border-amber-500/20"
+            data-search="{% for p in session.players %}{{ p.name|lower }} {% endfor %}"
+        >
+            <!-- TOP DECORATIVE GLOW -->
+            <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4a017]/20 to-transparent"></div>
+
+            <div class="p-8">
+                <!-- TOP HEADER -->
+                <div class="flex flex-col lg:flex-row justify-between items-start gap-4 mb-6">
+                    <div>
+                        <h2 class="cinzel text-3xl font-bold text-white mb-1.5">
+                            {{ session.session_name }}
+                        </h2>
+                        <p class="text-xs text-gray-500 font-mono tracking-wider">
+                            {{ session.session_date }}
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2.5">
+                        <span class="px-4 py-2 rounded-2xl bg-amber-500/5 border border-amber-500/10 text-amber-400 text-xs font-bold font-mono">
+                            {{ session.players|length }} Players
+                        </span>
+                        <span class="px-4 py-2 rounded-2xl bg-blue-500/5 border border-blue-500/10 text-blue-400 text-xs font-bold font-mono">
+                            ₹{{ ns.total_buyin|int }} Pool
+                        </span>
+                        <span class="px-4 py-2 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                            Balanced
+                        </span>
+                    </div>
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="flex flex-wrap gap-3.5 mb-6">
+                    <button
+                        onclick="toggleSession('session{{ loop.index }}')"
+                        class="px-5 py-3 rounded-2xl bg-[#d4a017] hover:bg-amber-500 text-black font-extrabold text-xs tracking-wider transition-all shadow-lg shadow-[#d4a017]/10"
+                    >
+                        View Details
+                    </button>
+                    
+                    <a
+                        href="/edit-session/{{ loop.revindex0 }}"
+                        class="px-5 py-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 font-extrabold text-xs tracking-wider flex items-center gap-1.5 hover:bg-blue-500/15 transition-all"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.586-9.414a2 2 0 112.828 2.828L12 14l-4 1 1-4 8.414-8.414z" />
+                        </svg>
+                        Edit
+                    </a>
+
+                    <form action="/duplicate-session/{{ loop.revindex0 }}" method="POST" class="inline">
+                        <button class="px-5 py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 font-extrabold text-xs tracking-wider flex items-center gap-1.5 hover:bg-purple-500/15 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2M8 16h8a2 2 0 002-2V10a2 2 0 00-2-2H8a2 2 0 00-2 2v4a2 2 0 002 2z" />
+                            </svg>
+                            Duplicate
+                        </button>
+                    </form>
+
+                    <form action="/delete-session/{{ loop.revindex0 }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this session?')" class="inline">
+                        <button class="px-5 py-3 rounded-2xl bg-rose-600/10 border border-rose-500/20 text-rose-400 font-extrabold text-xs tracking-wider hover:bg-rose-600/15 transition-all">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+
+                {% set ns_stats = namespace(winner=none, loser=none) %}
+                {% for p in session.players %}
+                    {% if ns_stats.winner is none or p.result|float > ns_stats.winner.result|float %}
+                        {% set ns_stats.winner = p %}
+                    {% endif %}
+                    {% if ns_stats.loser is none or p.result|float < ns_stats.loser.result|float %}
+                        {% set ns_stats.loser = p %}
+                    {% endif %}
+                {% endfor %}
+                {% set winner = ns_stats.winner %}
+                {% set loser = ns_stats.loser %}
+
+                <!-- PERFORMANCE HIGHLIGHT BANNER -->
+                <div class="flex flex-wrap gap-x-8 gap-y-2 mb-6 text-sm border-y border-white/5 py-4 font-medium text-gray-300">
+                    {% if winner %}
+                    <span class="flex items-center gap-1.5">
+                        <span class="text-emerald-400 font-bold uppercase tracking-wider text-[10px]">MVP:</span>
+                        <a href="/player/{{ winner.name }}" class="hover:text-[#ffcc33] font-bold text-white transition-colors underline decoration-[#d4a017]/25 underline-offset-4">{{ winner.name }}</a>
+                        <span class="text-emerald-400 font-mono font-bold">+₹{{ winner.result }}</span>
+                    </span>
+                    {% endif %}
+
+                    {% if loser %}
+                    <span class="flex items-center gap-1.5">
+                        <span class="text-rose-400 font-bold uppercase tracking-wider text-[10px]">Biggest Deficit:</span>
+                        <a href="/player/{{ loser.name }}" class="hover:text-[#ffcc33] font-bold text-white transition-colors underline decoration-[#d4a017]/25 underline-offset-4">{{ loser.name }}</a>
+                        <span class="text-rose-400 font-mono font-bold">-₹{{ loser.result | abs }}</span>
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- PREVIEW ROW (TOP 3) -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {% for player in session.players[:3] %}
+                    <div class="bg-[#05070d]/60 border border-white/5 rounded-2xl p-4 flex justify-between items-center">
+                        <div>
+                            <span class="text-[9px] uppercase tracking-wider text-gray-500 block mb-0.5">Player</span>
+                            <a href="/player/{{ player.name }}" class="font-bold text-white hover:text-amber-400 transition-colors text-sm truncate max-w-[120px] block">
+                                {{ player.name }}
+                            </a>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[9px] uppercase tracking-wider text-gray-500 block mb-0.5">Result</span>
+                            {% if player.result|float >= 0 %}
+                            <strong class="text-emerald-400 font-mono text-sm font-bold block">+₹{{ player.result }}</strong>
+                            {% else %}
+                            <strong class="text-rose-500 font-mono text-sm font-bold block">-₹{{ player.result | abs }}</strong>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- COLLAPSIBLE DETAILS PANEL -->
+            <div id="session{{ loop.index }}" class="hidden border-t border-white/5 bg-[#05070d]/20 p-8">
+                <h3 class="cinzel text-xl font-bold text-white mb-6">Complete Standings Ledger</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {% for player in session.players %}
+                    <div class="bg-[#05070d]/80 border border-white/5 rounded-2xl p-5 flex justify-between items-center hover:border-white/10 transition-colors">
+                        <div>
+                            <a href="/player/{{ player.name }}" class="font-extrabold text-white text-base hover:text-amber-400 transition-colors block mb-1">
+                                {{ player.name }}
+                            </a>
+                            <span class="text-gray-500 text-[10px] uppercase tracking-wider block">Buy-In: <strong class="text-amber-400 font-mono font-bold">₹{{ player.buyin }}</strong></span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[9px] uppercase tracking-wider text-gray-500 block mb-0.5">Net P/L</span>
+                            {% if player.result|float >= 0 %}
+                            <span class="text-emerald-400 font-mono font-bold text-base block">+₹{{ player.result }}</span>
+                            {% else %}
+                            <span class="text-rose-500 font-mono font-bold text-base block">-₹{{ player.result | abs }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass border border-white/5 rounded-[32px] p-20 text-center shadow-2xl">
+        <h2 class="cinzel text-4xl font-extrabold mb-4 text-gray-400">
+            No Session Records
+        </h2>
+        <p class="text-slate-500 mb-6">
+            You haven't logged any historical poker session archives yet.
+        </p>
+        <a href="/add-session" class="inline-block px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-[#d4a017] hover:from-amber-600 hover:to-[#b8860b] text-black font-extrabold text-sm transition-all shadow-lg shadow-amber-500/10">
+            Add First Session
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleSession(id) {
+    const section = document.getElementById(id);
+    if (section) {
+        section.classList.toggle("hidden");
+    }
+}
+
+function filterSessions() {
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const cards = document.querySelectorAll(".session-card");
+
+    cards.forEach(card => {
+        const content = card.dataset.search;
+        if (content.includes(search)) {
+            card.style.display = "block";
+        } else {
+            card.style.display = "none";
+        }
+    });
+}
+</script>
+
+{% endblock %}

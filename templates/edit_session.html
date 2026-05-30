@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Session - ALL IN
+{% endblock %}
+
+{% block content %}
+
+<!-- DATALIST SEARCH SUGGESTIONS -->
+<datalist id="player-list">
+    {% for name in player_names %}
+    <option value="{{ name }}">
+    {% endfor %}
+</datalist>
+
+<!-- PAGE BACKGROUND -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
+    <img
+        src="/static/hero-banner.png"
+        class="w-full h-full object-cover opacity-[0.05] scale-110 select-none pointer-events-none"
+    >
+    <div class="absolute inset-0 bg-[#020305]/92"></div>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <!-- HEADER -->
+    <div class="mb-10">
+        <p class="text-amber-400 uppercase tracking-[0.3em] text-xs mb-3">
+            Session Management
+        </p>
+        <h1 class="cinzel text-5xl font-black text-white mb-2">
+            Edit Session
+        </h1>
+        <p class="text-gray-400 text-sm">
+            Modify game name, dates, or correct player buy-ins and cash-outs. Total ledger must remain balanced.
+        </p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="flex items-center mb-10 select-none">
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+        <div class="mx-6 text-[#d4a017]">✦ ◆ ✦</div>
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+    </div>
+
+    <form action="/update-session/{{ session_index }}" method="POST" onsubmit="return preparePlayers(event)">
+        <input type="hidden" id="players_json" name="players_json">
+
+        <!-- OVERVIEW SUMMARY GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <!-- PLAYERS COUNT -->
+            <div class="glass border border-white/5 rounded-[28px] p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+                <div class="absolute -right-6 -bottom-6 w-16 h-16 bg-[#d4a017]/5 rounded-full blur-xl"></div>
+                <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-2">Total Players</p>
+                <h2 id="player-count" class="cinzel text-4xl font-extrabold text-amber-400">{{ session.players | length }}</h2>
+            </div>
+
+            <!-- BALANCE TOTAL DIFFERENTIAL -->
+            <div class="glass border border-white/5 rounded-[28px] p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+                <div class="absolute -right-6 -bottom-6 w-16 h-16 bg-red-500/5 rounded-full blur-xl"></div>
+                <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-2">Buy-In / Cash-Out Difference</p>
+                <h2 id="balance-display" class="cinzel text-4xl font-extrabold text-emerald-400 font-mono">₹0</h2>
+            </div>
+
+            <!-- BALANCED STATUS BADGE -->
+            <div class="glass border border-white/5 rounded-[28px] p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+                <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-3">Tally Status</p>
+                <div>
+                    <span id="status-display" class="inline-flex px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black uppercase tracking-wider select-none">
+                        Balanced
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SESSION DESCRIPTION METADATA -->
+        <div class="glass border border-white/5 rounded-[32px] p-8 mb-10 shadow-2xl">
+            <h2 class="cinzel text-2xl font-bold text-white mb-6">Session Parameters</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-gray-500 font-bold mb-2">Session Name</label>
+                    <input
+                        type="text"
+                        name="session_name"
+                        value="{{ session.session_name }}"
+                        required
+                        class="w-full bg-[#05070d]/80 border border-[#1a2230] rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-amber-500 transition-all font-semibold"
+                    >
+                </div>
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-gray-500 font-bold mb-2">Session Date</label>
+                    <input
+                        type="date"
+                        name="session_date"
+                        value="{{ session.session_date }}"
+                        required
+                        class="w-full bg-[#05070d]/80 border border-[#1a2230] rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-amber-500 transition-all font-semibold font-mono"
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- PLAYERS FORM HEADER -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="cinzel text-3xl font-extrabold text-white">Player List</h2>
+                <p class="text-xs text-gray-500 mt-1">Specify player buy-ins and cash-outs. Total ledger profit must tally to ₹0.</p>
+            </div>
+            
+            <button
+                type="button"
+                onclick="addPlayer()"
+                class="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-[#d4a017] hover:from-amber-600 hover:to-[#b8860b] text-black font-extrabold text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/10 hover:scale-[1.02]"
+            >
+                + Add Player
+            </button>
+        </div>
+
+        <!-- PLAYER CARDS CONTAINER -->
+        <div id="players-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            {% for player in session.players %}
+            <div class="glass border border-white/5 rounded-[32px] p-6 space-y-4 shadow-xl relative overflow-hidden transition-all duration-300 hover:border-white/10">
+                <div class="flex justify-between items-center">
+                    <h3 class="cinzel font-bold text-sm text-gray-400 uppercase tracking-wider">Player</h3>
+                    <button
+                        type="button"
+                        onclick="this.closest('div.glass').remove(); updateBalance();"
+                        class="px-3.5 py-1.5 rounded-xl bg-rose-600/10 border border-rose-500/20 text-rose-400 text-[10px] font-black uppercase tracking-widest hover:bg-rose-600/15 transition-all"
+                    >
+                        Remove
+                    </button>
+                </div>
+
+                <div class="space-y-3.5">
+                    <div>
+                        <label class="block text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">Player Name</label>
+                        <input
+                            type="text"
+                            value="{{ player.name }}"
+                            list="player-list"
+                            required
+                            class="player-name w-full bg-[#05070d]/80 border border-[#1a2230] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-all font-semibold"
+                        >
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">Buy-In Amount</label>
+                            <input
+                                type="number"
+                                value="{{ player.buyin }}"
+                                oninput="updateBalance()"
+                                required
+                                min="0"
+                                class="player-buyin w-full bg-[#05070d]/80 border border-[#1a2230] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-all font-mono font-bold"
+                            >
+                        </div>
+                        <div>
+                            <label class="block text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">Cash-Out Amount</label>
+                            <input
+                                type="number"
+                                value="{{ player.buyin|int + player.result|int }}"
+                                oninput="updateBalance()"
+                                required
+                                min="0"
+                                class="player-cashout w-full bg-[#05070d]/80 border border-[#1a2230] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-all font-mono font-bold"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center text-xs border-t border-white/5 pt-3">
+                        <span class="text-gray-500 font-bold uppercase tracking-wider text-[9px]">Player Net:</span>
+                        {% if player.result >= 0 %}
+                        <span class="player-profit font-mono font-bold text-emerald-400">+₹{{ player.result }}</span>
+                        {% else %}
+                        <span class="player-profit font-mono font-bold text-rose-500">-₹{{ player.result | abs }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- SUBMIT / ACTIONS -->
+        <div class="flex flex-col sm:flex-row gap-4">
+            <a
+                href="/history"
+                class="flex-1 py-5 rounded-[28px] bg-white/5 border border-white/10 hover:border-white/20 text-gray-300 text-center font-extrabold uppercase tracking-widest transition-all shadow-xl"
+            >
+                Cancel Changes
+            </a>
+            
+            <button
+                type="submit"
+                class="flex-1 py-5 rounded-[28px] bg-gradient-to-r from-amber-500 to-[#d4a017] hover:from-amber-600 hover:to-[#b8860b] text-black font-black uppercase tracking-widest transition-all shadow-xl shadow-amber-500/10"
+            >
+                UPDATE SESSION
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- DYNAMIC TALLY ENGINE -->
+<script>
+function updateBalance() {
+    const cards = document.querySelectorAll("#players-container > div");
+    let totalBuyin = 0;
+    let totalCashout = 0;
+
+    cards.forEach(card => {
+        const buyin = Number(card.querySelector(".player-buyin")?.value || 0);
+        const cashout = Number(card.querySelector(".player-cashout")?.value || 0);
+        const profit = cashout - buyin;
+
+        totalBuyin += buyin;
+        totalCashout += cashout;
+
+        const profitVal = card.querySelector(".player-profit");
+        if (profitVal) {
+            if (profit >= 0) {
+                profitVal.innerText = `+₹${profit}`;
+                profitVal.className = "player-profit font-mono font-bold text-emerald-400";
+            } else {
+                profitVal.innerText = `-₹${Math.abs(profit)}`;
+                profitVal.className = "player-profit font-mono font-bold text-rose-500";
+            }
+        }
+    });
+
+    const difference = totalCashout - totalBuyin;
+    const balanceDisplay = document.getElementById("balance-display");
+    const statusDisplay = document.getElementById("status-display");
+
+    if (difference === 0) {
+        balanceDisplay.innerText = "₹0";
+        balanceDisplay.className = "cinzel text-4xl font-extrabold text-emerald-400 font-mono";
+        statusDisplay.className = "inline-flex px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black uppercase tracking-wider select-none";
+        statusDisplay.innerText = "BALANCED";
+    } else {
+        balanceDisplay.innerText = `${difference > 0 ? '+' : ''}₹${difference}`;
+        balanceDisplay.className = `cinzel text-4xl font-extrabold font-mono ${difference > 0 ? 'text-emerald-400' : 'text-rose-500'}`;
+        statusDisplay.className = "inline-flex px-4 py-2.5 rounded-xl bg-rose-600/10 border border-rose-500/20 text-rose-400 text-xs font-black uppercase tracking-wider select-none";
+        statusDisplay.innerText = "NOT BALANCED";
+    }
+
+    document.getElementById("player-count").innerText = cards.length;
+}
+
+function addPlayer() {
+    const container = document.getElementById("players-container");
+    container.insertAdjacentHTML(
+        "beforeend",
+        `
+        <div class="glass border border-white/5 rounded-[32px] p-6 space-y-4 shadow-xl relative overflow-hidden transition-all duration-300 hover:border-white/10">
+            <div class="flex justify-between items-center">
+                <h3 class="cinzel font-bold text-sm text-gray-400 uppercase tracking-wider">Competitor</h3>
+                <button
+                    type="button"
+                    onclick="this.closest('div.glass').remove(); updateBalance();"
+                    class="px-3.5 py-1.5 rounded-xl bg-rose-600/10 border border-rose-500/20 text-rose-400 text-[10px] font-black uppercase tracking-widest hover:bg-rose-600/15 transition-all"
+                >
+                    Remove
+                </button>
+            </div>
+
+            <div class="space-y-3.5">
+                <div>
+                    <label class="block text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">Player Name</label>
+                    <input
+                        type="text"
+                        list="player-list"
+                        required
+                        class="player-name w-full bg-[#05070d]/80 border border-[#1a2230] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-all font-semibold"
+                    >
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">Buy-In Amount</label>
+                        <input
+                            type="number"
+                            placeholder="₹ Buy-In"
+                            oninput="updateBalance()"
+                            required
+                            min="0"
+                            class="player-buyin w-full bg-[#05070d]/80 border border-[#1a2230] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-all font-mono font-bold"
+                        >
+                    </div>
+                    <div>
+                        <label class="block text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">Cash-Out Amount</label>
+                        <input
+                            type="number"
+                            placeholder="₹ Cash-Out"
+                            oninput="updateBalance()"
+                            required
+                            min="0"
+                            class="player-cashout w-full bg-[#05070d]/80 border border-[#1a2230] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-all font-mono font-bold"
+                        >
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center text-xs border-t border-white/5 pt-3">
+                    <span class="text-gray-500 font-bold uppercase tracking-wider text-[9px]">Competitor Net:</span>
+                    <span class="player-profit font-mono font-bold text-amber-400">₹0</span>
+                </div>
+            </div>
+        </div>
+        `
+    );
+    updateBalance();
+}
+
+function preparePlayers(event) {
+    const cards = document.querySelectorAll("#players-container > div");
+    let players = [];
+    let total = 0;
+
+    for (const card of cards) {
+        const name = card.querySelector(".player-name").value.trim();
+        const buyin = card.querySelector(".player-buyin").value.trim();
+        const cashout = card.querySelector(".player-cashout").value.trim();
+
+        if (!name || !buyin || !cashout) {
+            alert("All player inputs must be filled before saving.");
+            event.preventDefault();
+            return false;
+        }
+
+        const buyinNumber = Number(buyin);
+        const cashoutNumber = Number(cashout);
+        const result = cashoutNumber - buyinNumber;
+        total += result;
+
+        players.push({
+            name: name,
+            buyin: buyinNumber,
+            result: result
+        });
+    }
+
+    if (total !== 0) {
+        alert("Unable to save. Total session difference is unbalanced. Total pool buy-ins must exactly match cash-outs.");
+        event.preventDefault();
+        return false;
+    }
+
+    document.getElementById("players_json").value = JSON.stringify(players);
+    return true;
+}
+
+updateBalance();
+</script>
+
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}
+Analytics - ALL IN
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE BACKGROUND -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
+    <img
+        src="/static/hero-banner.png"
+        class="w-full h-full object-cover opacity-[0.05] scale-110 select-none pointer-events-none"
+    >
+    <div class="absolute inset-0 bg-[#020305]/92"></div>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <!-- HEADER -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+            <p class="text-amber-400 uppercase tracking-[0.3em] text-xs mb-3">
+                System Statistics
+            </p>
+            <h1 class="cinzel text-5xl font-black text-white">
+                Usage Analytics
+            </h1>
+        </div>
+        
+        <div class="glass px-5 py-3 rounded-2xl border border-white/5 flex items-center gap-2">
+            <span class="text-xs text-gray-500">System State:</span>
+            <span class="text-emerald-400 font-bold uppercase tracking-wider text-xs">Production Ready</span>
+        </div>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="flex items-center mb-10 select-none">
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+        <div class="mx-6 text-[#d4a017]">✦ ◆ ✦</div>
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+    </div>
+
+    <!-- MAIN STATS GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+        <!-- SESSIONS CREATED -->
+        <div class="dashboard-card glass p-8 rounded-[32px] border border-white/5 relative overflow-hidden flex justify-between items-center shadow-2xl">
+            <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-[#d4a017]/5 rounded-full blur-2xl"></div>
+            <div>
+                <p class="text-slate-500 text-[10px] uppercase tracking-widest font-bold mb-1">Archived Sessions</p>
+                <h3 class="cinzel text-5xl font-extrabold text-[#ffcc33]">{{ total_sessions }}</h3>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-[#d4a017]/5 border border-[#d4a017]/25 flex items-center justify-center">
+                <span class="text-2xl">📁</span>
+            </div>
+        </div>
+
+        <!-- LIVE LOBBIES CREATED -->
+        <div class="dashboard-card glass p-8 rounded-[32px] border border-white/5 relative overflow-hidden flex justify-between items-center shadow-2xl">
+            <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl"></div>
+            <div>
+                <p class="text-slate-500 text-[10px] uppercase tracking-widest font-bold mb-1">Live Games Created</p>
+                <h3 class="cinzel text-5xl font-extrabold text-amber-400">{{ total_live_games }}</h3>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-amber-500/5 border border-amber-500/25 flex items-center justify-center">
+                <span class="text-2xl">⚡</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MOST ACTIVE PLAYERS -->
+    <div class="glass p-8 rounded-[32px] border border-white/5 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h3 class="cinzel text-2xl font-bold text-white">Most Active Players</h3>
+                <p class="text-xs text-gray-500 mt-1">Platform-wide participation ranking across all historical and live poker sessions.</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                <span class="text-lg">🔥</span>
+            </div>
+        </div>
+        
+        {% if active_players %}
+        <div class="space-y-4">
+            {% for name, count in active_players %}
+            <a href="/player/{{ name }}" class="block group">
+                <div class="flex justify-between items-center p-5 rounded-2xl bg-[#05070d]/50 border border-white/5 group-hover:border-amber-500/30 transition-all shadow-xl">
+                    <div class="flex items-center gap-5">
+                        <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-mono font-bold text-xs text-gray-400 group-hover:text-amber-400 group-hover:border-amber-500/20 transition-all select-none">
+                            {% if loop.index == 1 %}
+                            🥇
+                            {% elif loop.index == 2 %}
+                            🥈
+                            {% elif loop.index == 3 %}
+                            🥉
+                            {% else %}
+                            #{{ loop.index }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span class="text-white font-extrabold text-base group-hover:text-amber-400 transition-colors">{{ name }}</span>
+                            <span class="text-gray-500 text-[10px] uppercase tracking-wider block mt-0.5">Competitor</span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <span class="text-gray-500 text-[9px] uppercase tracking-widest font-bold block mb-0.5">Games Played</span>
+                        <span class="text-amber-400 font-mono font-bold text-base">{{ count }} Matches</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <p class="text-gray-500 text-sm">No player activity has been logged yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

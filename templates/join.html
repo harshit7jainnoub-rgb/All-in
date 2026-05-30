@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- PAGE BACKGROUND -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
+    <img
+        src="/static/hero-banner.png"
+        class="w-full h-full object-cover opacity-[0.05] scale-110 select-none pointer-events-none"
+    >
+    <div class="absolute inset-0 bg-[#020305]/92"></div>
+</div>
+
+<div class="max-w-md mx-auto">
+    <!-- HEADER -->
+    <div class="text-center mb-8">
+        <p class="text-amber-400 uppercase tracking-[0.3em] text-xs mb-3">
+            Table Entrance
+        </p>
+        <h1 class="cinzel text-4xl font-black text-white">
+            Join Live Game
+        </h1>
+        <p class="text-xs text-gray-500 mt-1">Enter player details and the lobby room code below.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="flex items-center mb-8 select-none">
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+        <div class="mx-4 text-[#d4a017] text-xs">✦ ◆ ✦</div>
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+    </div>
+
+    <form
+        action="/join-game"
+        method="POST"
+        class="glass p-8 rounded-[32px] border border-white/5 shadow-2xl space-y-5 relative overflow-hidden"
+    >
+        <div class="absolute -right-10 -bottom-10 w-24 h-24 bg-amber-500/[0.02] rounded-full blur-xl"></div>
+
+        <div>
+            <label class="block text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-2">Your Name</label>
+            <input
+                type="text"
+                name="player_name"
+                placeholder="e.g. Harshit"
+                required
+                class="w-full px-5 py-4 rounded-2xl bg-[#05070d]/85 border border-[#1a2230] text-white focus:outline-none focus:border-[#d4a017] transition-all font-semibold text-center text-sm"
+            >
+        </div>
+
+        <div>
+            <label class="block text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-2">Lobby Code</label>
+            <input
+                type="text"
+                name="game_code"
+                placeholder="e.g. ABCD"
+                required
+                value="{{ code }}"
+                maxlength="4"
+                class="w-full px-5 py-4 rounded-2xl bg-[#05070d]/85 border border-[#1a2230] text-white focus:outline-none focus:border-[#d4a017] transition-all font-bold text-center text-lg uppercase tracking-widest font-mono"
+            >
+        </div>
+
+        <button
+            type="submit"
+            class="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-[#d4a017] hover:from-amber-600 hover:to-[#b8860b] text-black font-extrabold text-sm uppercase tracking-wider transition-all shadow-lg shadow-amber-500/10"
+        >
+            Enter Game Table
+        </button>
+    </form>
+</div>
+
+{% endblock %}

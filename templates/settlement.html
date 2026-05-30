@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}
+Settlement - ALL IN
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE BACKGROUND -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
+    <img
+        src="/static/hero-banner.png"
+        class="w-full h-full object-cover opacity-[0.05] scale-110 select-none pointer-events-none"
+    >
+    <div class="absolute inset-0 bg-[#020305]/92"></div>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <p class="text-amber-400 uppercase tracking-[0.3em] text-xs mb-3">
+                Financial Operations
+            </p>
+            <h1 class="cinzel text-5xl font-black text-white">
+                Settlement Engine
+            </h1>
+        </div>
+        
+        <div class="glass px-5 py-3 rounded-2xl border border-white/5 flex items-center gap-2">
+            <span class="text-xs text-gray-400">Total Pool Transactions:</span>
+            <span class="text-amber-400 font-bold font-mono">{{ settlements | length }}</span>
+        </div>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="flex items-center mb-10 select-none">
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+        <div class="mx-6 text-[#d4a017]">✦ ◆ ✦</div>
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+    </div>
+
+    {% if settlements %}
+
+    <!-- SUMMARY GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <!-- TRANSACTIONS -->
+        <div class="glass border border-white/5 rounded-[28px] p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+            <div class="absolute -right-6 -bottom-6 w-16 h-16 bg-[#d4a017]/5 rounded-full blur-xl"></div>
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-2">Required Routes</p>
+            <h2 class="cinzel text-4xl font-extrabold text-amber-400">{{ settlements|length }}</h2>
+        </div>
+
+        <!-- RECEIVERS -->
+        <div class="glass border border-white/5 rounded-[28px] p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+            <div class="absolute -right-6 -bottom-6 w-16 h-16 bg-emerald-500/5 rounded-full blur-xl"></div>
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-2">Claiming Players</p>
+            <h2 class="cinzel text-4xl font-extrabold text-emerald-400">
+                {{ settlements | map(attribute='to') | unique | list | length }}
+            </h2>
+        </div>
+
+        <!-- PAYERS -->
+        <div class="glass border border-white/5 rounded-[28px] p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+            <div class="absolute -right-6 -bottom-6 w-16 h-16 bg-rose-500/5 rounded-full blur-xl"></div>
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-2">Paying Players</p>
+            <h2 class="cinzel text-4xl font-extrabold text-rose-500">
+                {{ settlements | map(attribute='from') | unique | list | length }}
+            </h2>
+        </div>
+    </div>
+
+    <!-- COPY BOX -->
+    <div class="glass border border-white/5 rounded-[32px] p-8 mb-10 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="cinzel text-2xl font-bold text-white">Settlement Copy Block</h2>
+                <p class="text-xs text-gray-500 mt-1">Easily copy all optimized settlement splits to share in group channels.</p>
+            </div>
+            
+            <button
+                onclick="copySettlement()"
+                id="btn-copy"
+                class="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-[#d4a017] hover:from-amber-600 hover:to-[#b8860b] text-black font-extrabold text-xs uppercase tracking-wider transition-all shadow-lg"
+            >
+                Copy Ledger
+            </button>
+        </div>
+
+        <textarea
+            id="settlementText"
+            readonly
+            class="w-full h-32 bg-[#05070d]/80 border border-[#1a2230] rounded-2xl p-5 text-gray-300 focus:outline-none font-mono text-sm tracking-wide leading-relaxed resize-none"
+        >{% for item in settlements %}{{ item.from }} → {{ item.to }}: ₹{{ item.amount }}
+{% endfor %}</textarea>
+    </div>
+
+    <!-- ROUTES -->
+    <div class="space-y-4">
+        {% for item in settlements %}
+        <div class="glass border border-white/5 rounded-[28px] p-6 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 transition-all hover:border-white/10 shadow-xl relative overflow-hidden">
+            <!-- DECOR GLOW -->
+            <div class="absolute -left-10 -bottom-10 w-24 h-24 bg-amber-500/[0.02] rounded-full blur-xl"></div>
+            
+            <div>
+                <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-3">Optimal Route</p>
+                <div class="flex items-center gap-3.5 flex-wrap">
+                    <a
+                        href="/player/{{ item.from }}"
+                        class="px-4 py-2 rounded-xl bg-rose-600/10 border border-rose-500/20 text-rose-400 font-bold hover:bg-rose-600/15 hover:text-rose-300 transition-colors text-sm"
+                    >
+                        {{ item.from }}
+                    </a>
+
+                    <span class="text-amber-500 text-lg font-bold font-mono">&rarr;</span>
+
+                    <a
+                        href="/player/{{ item.to }}"
+                        class="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold hover:bg-emerald-500/15 hover:text-emerald-300 transition-colors text-sm"
+                    >
+                        {{ item.to }}
+                    </a>
+                </div>
+            </div>
+
+            <div class="text-left sm:text-right flex flex-col justify-center border-t sm:border-t-0 border-white/5 pt-4 sm:pt-0">
+                <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-1">Transfer Amount</p>
+                <h2 class="text-3xl font-black text-[#ffcc33] font-mono">
+                    ₹{{ item.amount }}
+                </h2>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="glass border border-white/5 rounded-[32px] p-20 text-center shadow-2xl">
+        <div class="text-5xl mb-4 select-none">🤝</div>
+        <h2 class="cinzel text-4xl font-extrabold mb-4 text-emerald-400">
+            Fully Settled
+        </h2>
+        <p class="text-slate-500 max-w-md mx-auto">
+            All players are fully balanced. There are no pending transactions or payouts required.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function copySettlement() {
+    const text = document.getElementById("settlementText");
+    text.select();
+    navigator.clipboard.writeText(text.value).then(function() {
+        const btn = document.getElementById("btn-copy");
+        const originalText = btn.innerText;
+        btn.innerText = "COPIED!";
+        btn.classList.add("bg-emerald-500", "text-white");
+        btn.classList.remove("from-amber-500", "to-[#d4a017]", "text-black");
+        setTimeout(function() {
+            btn.innerText = originalText;
+            btn.classList.remove("bg-emerald-500", "text-white");
+            btn.classList.add("from-amber-500", "to-[#d4a017]", "text-black");
+        }, 2000);
+    }).catch(function(err) {
+        console.error("Could not copy settlement splits:", err);
+    });
+}
+</script>
+
+{% endblock %}

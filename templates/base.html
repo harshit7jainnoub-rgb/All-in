@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+>
+
+<title>{% block title %}ALL IN{% endblock %}</title>
+
+<!-- PWA Manifest & Mobile App Meta Tags -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#d4a017">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ALL IN">
+<link rel="apple-touch-icon" href="/static/logo.png">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+>
+
+<link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+>
+
+<link
+href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap"
+rel="stylesheet"
+>
+
+<style>
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+
+    font-family:'Inter',sans-serif;
+
+    background:
+        radial-gradient(circle at top,#0d1320 0%,#020305 45%);
+
+    background-color:#020305;
+
+    overflow-x:hidden;
+    
+    /* Optimize mobile viewport display */
+    padding-bottom: env(safe-area-inset-bottom);
+
+}
+
+.cinzel{
+    font-family:'Cinzel',serif;
+}
+
+.glass{
+
+    background:rgba(6,9,16,0.88);
+
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+
+}
+
+.dashboard-card{
+
+    transition:all .3s ease;
+
+}
+
+.dashboard-card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,.45),
+        0 0 25px rgba(212,160,23,.10);
+
+}
+
+.sidebar-link{
+
+    transition:all .25s ease;
+
+}
+
+.sidebar-link:hover{
+
+    transform:translateX(6px);
+
+    border-color:#d4a017;
+
+    color:#ffcc33;
+
+}
+
+.active-link{
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(212,160,23,.15),
+            transparent
+        );
+
+    border-color:#d4a017;
+
+    color:#ffcc33;
+
+    box-shadow:
+        0 0 20px rgba(212,160,23,.12);
+
+}
+
+::-webkit-scrollbar{
+    width:10px;
+}
+
+::-webkit-scrollbar-track{
+    background:#05070c;
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#2b210f;
+
+    border-radius:20px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+    background:#d4a017;
+}
+
+/* Touch friendly optimizations */
+button, a, select, input {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+}
+
+/* Touch-friendly PWA Responsive Adjustments */
+@media (max-width: 480px) {
+    .mobile-nav-label {
+        font-size: 8px !important;
+        letter-spacing: 0.05em !important;
+    }
+}
+@media (max-width: 380px) {
+    .mobile-nav-label {
+        display: none;
+    }
+    .mobile-nav-icon {
+        width: 1.5rem !important;
+        height: 1.5rem !important;
+    }
+}
+
+</style>
+
+<!-- Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then((reg) => console.log('[Service Worker] Registered', reg.scope))
+            .catch((err) => console.error('[Service Worker] Registration failed', err));
+    });
+}
+</script>
+
+</head>
+
+<body class="text-white select-none">
+
+<div class="flex min-h-screen">
+
+    <!-- SIDEBAR (DESKTOP ONLY) -->
+    {% if not hide_sidebar %}
+    <aside class="hidden lg:flex w-[280px] glass border-r border-[#151922] flex-col justify-between shrink-0">
+
+        <div>
+
+            <!-- LOGO -->
+            <div class="pt-10 pb-8 text-center">
+                <a href="/">
+                    <img
+                        src="/static/logo.png"
+                        class="w-[180px] mx-auto active:scale-[0.98] transition-transform"
+                    >
+                </a>
+            </div>
+
+            <!-- NAVIGATION -->
+            <div class="px-5">
+
+                <p class="text-[11px] uppercase tracking-[6px] text-[#d4a017] mb-6">
+                    Navigation
+                </p>
+
+                <div class="space-y-3">
+
+                    <a
+                        href="/"
+                        class="sidebar-link flex items-center gap-4 px-5 py-4 rounded-2xl border {% if active_page == 'dashboard' %}active-link{% else %}border-[#1a202b]{% endif %}"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-5 h-5"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.8"
+                                  d="M3 10.5L12 3l9 7.5M5.25 9.75V21h13.5V9.75"/>
+                        </svg>
+                        Dashboard
+                    </a>
+
+                    <a
+                        href="/add-session"
+                        class="sidebar-link flex items-center gap-4 px-5 py-4 rounded-2xl border {% if active_page == 'add-session' %}active-link{% else %}border-[#1a202b]{% endif %}"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-5 h-5"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.8"
+                                  d="M12 5v14m-7-7h14"/>
+                        </svg>
+                        Add Session
+                    </a>
+
+                    <a
+                        href="/history"
+                        class="sidebar-link flex items-center gap-4 px-5 py-4 rounded-2xl border {% if active_page == 'history' %}active-link{% else %}border-[#1a202b]{% endif %}"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-5 h-5"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <circle cx="12" cy="12" r="9" stroke-width="1.8"/>
+                            <path d="M12 7v5l3 2" stroke-width="1.8"/>
+                        </svg>
+                        History
+                    </a>
+
+                    <a
+                        href="/totals"
+                        class="sidebar-link flex items-center gap-4 px-5 py-4 rounded-2xl border {% if active_page == 'totals' %}active-link{% else %}border-[#1a202b]{% endif %}"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-5 h-5"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path d="M5 19V5M10 19V9M15 19V3M20 19V12"
+                                  stroke-width="1.8"/>
+                        </svg>
+                        Totals
+                    </a>
+
+                    <a
+                        href="/settlement"
+                        class="sidebar-link flex items-center gap-4 px-5 py-4 rounded-2xl border {% if active_page == 'settlement' %}active-link{% else %}border-[#1a202b]{% endif %}"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-5 h-5"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path d="M12 4v16M6 8h12M6 16h12"
+                                  stroke-width="1.8"/>
+                        </svg>
+                        Settlement
+                    </a>
+
+                    <a
+                        href="/live"
+                        class="sidebar-link flex items-center gap-4 px-5 py-4 rounded-2xl border {% if active_page == 'live' %}active-link{% else %}border-[#1a202b]{% endif %}"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-5 h-5 animate-pulse text-[#d4a017]"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <circle cx="12" cy="12" r="9" stroke-width="1.8"/>
+                            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                        </svg>
+                        Live Game
+                    </a>
+
+                    <a
+                        href="/analytics"
+                        class="sidebar-link flex items-center gap-4 px-5 py-4 rounded-2xl border {% if active_page == 'analytics' %}active-link{% else %}border-[#1a202b]{% endif %}"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-5 h-5"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.8"
+                                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2" />
+                        </svg>
+                        Analytics
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- FOOTER PANEL -->
+        <div class="m-5 p-5 rounded-3xl border border-[#1b202b] glass select-none">
+            <p class="text-[#d4a017] text-sm mb-2 font-bold">ALL IN</p>
+            <p class="text-gray-400 text-xs">Premium Poker Ledger</p>
+        </div>
+
+    </aside>
+    {% endif %}
+
+    <!-- CONTENT -->
+    <main class="flex-1 p-6 sm:p-10 pb-28 lg:pb-10 overflow-y-auto {% if hide_sidebar %}flex items-center justify-center pb-6{% endif %}">
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+</div>
+
+<!-- MOBILE BOTTOM NAVIGATION BAR -->
+{% if not hide_sidebar %}
+<nav class="lg:hidden fixed bottom-0 left-0 right-0 h-20 glass border-t border-white/5 flex justify-around items-center z-50 px-2 pb-safe shadow-2xl">
+    <a href="/" class="flex flex-col items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider transition-colors {% if active_page == 'dashboard' %}text-[#ffcc33]{% else %}text-gray-500 hover:text-white{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mobile-nav-icon w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 10.5L12 3l9 7.5M5.25 9.75V21h13.5V9.75"/>
+        </svg>
+        <span class="mobile-nav-label">Home</span>
+    </a>
+    
+    <a href="/history" class="flex flex-col items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider transition-colors {% if active_page == 'history' %}text-[#ffcc33]{% else %}text-gray-500 hover:text-white{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mobile-nav-icon w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <circle cx="12" cy="12" r="9" stroke-width="1.8"/>
+            <path d="M12 7v5l3 2" stroke-width="1.8"/>
+        </svg>
+        <span class="mobile-nav-label">History</span>
+    </a>
+
+    <a href="/live" class="flex flex-col items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider transition-colors {% if active_page == 'live' %}text-[#ffcc33]{% else %}text-gray-500 hover:text-white{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mobile-nav-icon w-5.5 h-5.5 {% if active_page == 'live' %}animate-pulse text-[#d4a017]{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <circle cx="12" cy="12" r="9" stroke-width="1.8"/>
+            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+        </svg>
+        <span class="mobile-nav-label">Live</span>
+    </a>
+
+    <a href="/settlement" class="flex flex-col items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider transition-colors {% if active_page == 'settlement' %}text-[#ffcc33]{% else %}text-gray-500 hover:text-white{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mobile-nav-icon w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M12 4v16M6 8h12M6 16h12" stroke-width="1.8"/>
+        </svg>
+        <span class="mobile-nav-label">Settlement</span>
+    </a>
+
+    <a href="/totals" class="flex flex-col items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider transition-colors {% if active_page == 'totals' %}text-[#ffcc33]{% else %}text-gray-500 hover:text-white{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mobile-nav-icon w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M5 19V5M10 19V9M15 19V3M20 19V12" stroke-width="1.8"/>
+        </svg>
+        <span class="mobile-nav-label">Totals</span>
+    </a>
+
+    <a href="/analytics" class="flex flex-col items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider transition-colors {% if active_page == 'analytics' %}text-[#ffcc33]{% else %}text-gray-500 hover:text-white{% endif %}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mobile-nav-icon w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2" />
+        </svg>
+        <span class="mobile-nav-label">Stats</span>
+    </a>
+</nav>
+{% endif %}
+
+<!-- PWA INSTALL BANNER -->
+<div id="pwa-install-banner" class="hidden fixed bottom-24 left-4 right-4 md:left-auto md:right-4 md:w-96 glass border border-[#d4a017]/30 p-5 rounded-3xl z-[100] shadow-2xl animate-fade-in-up">
+    <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-r from-amber-500 to-[#d4a017] flex items-center justify-center text-black font-extrabold text-lg select-none shadow-lg">
+            ♠️
+        </div>
+        <div class="flex-1">
+            <h4 class="font-bold text-sm text-white">Install ALL IN</h4>
+            <p class="text-[10px] text-gray-400 mt-0.5">Add to home screen to track poker tables with high performance!</p>
+        </div>
+    </div>
+    <div class="flex gap-3 mt-4">
+        <button onclick="dismissInstallPrompt()" class="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 font-bold text-xs transition-all text-center">
+            Not Now
+        </button>
+        <button id="btn-pwa-install" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-[#d4a017] text-black font-extrabold text-xs transition-all text-center shadow-lg shadow-amber-500/10">
+            Install App
+        </button>
+    </div>
+</div>
+
+<!-- PWA INSTALL EVENT HANDLERS -->
+<script>
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) {
+        banner.classList.remove('hidden');
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const installBtn = document.getElementById('btn-pwa-install');
+    if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+            dismissInstallPrompt();
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`PWA Installation Choice: ${outcome}`);
+            deferredPrompt = null;
+        });
+    }
+});
+
+function dismissInstallPrompt() {
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) {
+        banner.classList.add('hidden');
+    }
+}
+</script>
+
+</body>
+
+</html>

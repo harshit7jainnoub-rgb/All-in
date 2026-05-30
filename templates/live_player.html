@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- PAGE BACKGROUND -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
+    <img
+        src="/static/hero-banner.png"
+        class="w-full h-full object-cover opacity-[0.05] scale-110 select-none pointer-events-none"
+    >
+    <div class="absolute inset-0 bg-[#020305]/92"></div>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <!-- HEADER -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+            <h1 class="cinzel text-5xl font-black text-white mb-1.5 truncate max-w-sm sm:max-w-md">
+                {{ player.name }}
+            </h1>
+            <p class="text-gray-400 text-xs tracking-wider uppercase">
+                PLAYER DASHBOARD • CODE: <span class="text-amber-400 font-bold font-mono">{{ code }}</span>
+            </p>
+        </div>
+        
+        {% if game_status == 'ended' %}
+        <div class="px-5 py-3 rounded-2xl bg-rose-600/10 border border-rose-500/20 text-rose-400 font-bold flex items-center gap-2 select-none shadow-xl">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+            GAME ENDED (SETTLED)
+        </div>
+        {% else %}
+        <div class="glass px-5 py-3 rounded-2xl border border-[#d4a017]/20 text-[#ffcc33] font-bold flex items-center gap-2 select-none shadow-xl">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+            LIVE SESSION ACTIVE
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="flex items-center mb-10 select-none">
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+        <div class="mx-6 text-[#d4a017]">✦ ◆ ✦</div>
+        <div class="flex-1 h-[1px] bg-[#3b2a0d]"></div>
+    </div>
+
+    <!-- STATS CARDS -->
+    {% set buyin = player.buyin | int %}
+    {% set cashout = player.get("cashout", 0) | int %}
+    {% set profit = cashout - buyin %}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <!-- BUY IN -->
+        <div class="dashboard-card glass p-6 rounded-[28px] border border-white/5 relative overflow-hidden flex flex-col justify-between">
+            <div class="absolute -right-6 -bottom-6 w-16 h-16 bg-[#d4a017]/5 rounded-full blur-xl"></div>
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-2">Total Buy-In</p>
+            <h3 class="cinzel text-3xl font-extrabold text-amber-400 font-mono">₹{{ buyin }}</h3>
+        </div>
+        
+        <!-- CASHOUT -->
+        <div class="dashboard-card glass p-6 rounded-[28px] border border-white/5 relative overflow-hidden flex flex-col justify-between">
+            <div class="absolute -right-6 -bottom-6 w-16 h-16 bg-blue-500/5 rounded-full blur-xl"></div>
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-2">Current Cash-Out</p>
+            <h3 class="cinzel text-3xl font-extrabold text-blue-400 font-mono">₹{{ cashout }}</h3>
+        </div>
+
+        <!-- PROFIT / LOSS -->
+        <div class="dashboard-card glass p-6 rounded-[28px] border border-white/5 relative overflow-hidden flex flex-col justify-between">
+            <div class="absolute -right-6 -bottom-6 w-16 h-16 bg-emerald-500/5 rounded-full blur-xl"></div>
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold mb-2">Net Balance</p>
+            {% if profit >= 0 %}
+            <h3 class="cinzel text-3xl font-extrabold text-emerald-400 font-mono">+₹{{ profit }}</h3>
+            {% else %}
+            <h3 class="cinzel text-3xl font-extrabold text-rose-500 font-mono">-₹{{ profit | abs }}</h3>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- FORMS / ACTIONS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+        
+        <!-- ADD BUY-IN FORM -->
+        <div class="glass p-8 rounded-[32px] border border-white/5 flex flex-col justify-between shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-24 h-24 bg-emerald-500/[0.02] rounded-full blur-2xl"></div>
+            <div>
+                <h3 class="cinzel text-2xl font-bold text-white mb-2">Request Buy-In</h3>
+                <p class="text-gray-400 text-xs mb-6 leading-relaxed">
+                    Need additional chips? Post a new buy-in request. This will add to your cumulative table buy-ins.
+                </p>
+            </div>
+            
+            {% if game_status == 'ended' %}
+            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-center text-gray-500 font-bold text-xs select-none">
+                LOBBY CLOSED • BUY-INS FINALIZED
+            </div>
+            {% else %}
+            <form action="/add-buyin" method="POST" class="space-y-4">
+                <input type="hidden" name="code" value="{{ code }}">
+                <input type="hidden" name="player_name" value="{{ player.name }}">
+                
+                <div>
+                    <label class="block mb-2 text-[9px] uppercase tracking-wider text-gray-500 font-bold">Buy-In Amount (₹)</label>
+                    <input
+                        type="number"
+                        name="amount"
+                        required
+                        min="1"
+                        placeholder="e.g. 500"
+                        class="w-full px-5 py-4 rounded-2xl bg-[#05070d]/80 border border-[#1a2230] text-white focus:outline-none focus:border-[#d4a017] transition-all font-semibold font-mono text-center text-base"
+                    >
+                </div>
+                <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-sm uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/10">
+                    Add Chips
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        <!-- CASH OUT FORM -->
+        <div class="glass p-8 rounded-[32px] border border-white/5 flex flex-col justify-between shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-24 h-24 bg-blue-500/[0.02] rounded-full blur-2xl"></div>
+            <div>
+                <h3 class="cinzel text-2xl font-bold text-white mb-2">Submit Cash-Out</h3>
+                <p class="text-gray-400 text-xs mb-6 leading-relaxed">
+                    Leaving the table or finishing the session? Enter your final stack count to calculate results.
+                </p>
+            </div>
+            
+            {% if game_status == 'ended' %}
+            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-center text-gray-500 font-bold text-xs select-none">
+                LOBBY CLOSED • CASH-OUTS OVERRIDDEN
+            </div>
+            {% else %}
+            <form action="/update-cashout" method="POST" class="space-y-4">
+                <input type="hidden" name="code" value="{{ code }}">
+                <input type="hidden" name="player_name" value="{{ player.name }}">
+                
+                <div>
+                    <label class="block mb-2 text-[9px] uppercase tracking-wider text-gray-500 font-bold">Final Stack Amount (₹)</label>
+                    <input
+                        type="number"
+                        name="amount"
+                        required
+                        min="0"
+                        placeholder="e.g. 1500"
+                        value="{{ cashout }}"
+                        class="w-full px-5 py-4 rounded-2xl bg-[#05070d]/80 border border-[#1a2230] text-white focus:outline-none focus:border-[#d4a017] transition-all font-semibold font-mono text-center text-base"
+                    >
+                </div>
+                <button type="submit" class="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-extrabold text-sm uppercase tracking-wider transition-all shadow-lg shadow-blue-500/10">
+                    Update Stack
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- TABLE LEADERBOARD -->
+    <div class="glass p-8 rounded-[32px] border border-white/5 mb-10 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="cinzel text-2xl font-bold text-white">
+                Table Standings
+            </h3>
+            <span class="text-[9px] text-[#d4a017] uppercase tracking-widest font-mono font-bold">Ranked by Buy-In</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-white/10 text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                        <th class="py-3 px-4 pl-4 font-normal">Rank</th>
+                        <th class="py-3 px-4 font-normal">Player</th>
+                        <th class="py-3 px-4 font-normal text-right">Total Buy-In</th>
+                        <th class="py-3 px-4 font-normal text-right">Cash Out</th>
+                        <th class="py-3 px-4 font-normal text-right pr-4">Net P/L</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    {% for p in game.players | sort(attribute='buyin', reverse=true) %}
+                    {% set p_buyin = p.buyin | int %}
+                    {% set p_cashout = p.get("cashout", 0) | int %}
+                    {% set p_net = p_cashout - p_buyin %}
+                    <tr class="text-sm transition-colors hover:bg-white/[0.01] {% if p.name == player.name %}bg-[#d4a017]/5 border-y border-[#d4a017]/15{% endif %}">
+                        <td class="py-4 px-4 pl-4 font-bold font-mono">
+                            {% if loop.index == 1 %}
+                            <span class="text-yellow-500 text-base" title="Chip Leader">🥇</span>
+                            {% elif loop.index == 2 %}
+                            <span class="text-slate-400 text-base">🥈</span>
+                            {% elif loop.index == 3 %}
+                            <span class="text-amber-700 text-base">🥉</span>
+                            {% else %}
+                            #{{ loop.index }}
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-4 font-bold text-white">
+                            <a href="/player/{{ p.name }}" class="hover:text-amber-400 transition-colors">
+                                {{ p.name }}
+                            </a>
+                            {% if p.name == player.name %}
+                            <span class="text-[#ffcc33] text-[10px] ml-1 font-bold select-none" title="You">★ (You)</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-4 text-right text-amber-400 font-bold font-mono">₹{{ p_buyin }}</td>
+                        <td class="py-4 px-4 text-right text-blue-400 font-bold font-mono">₹{{ p_cashout }}</td>
+                        <td class="py-4 px-4 text-right font-bold font-mono pr-4">
+                            {% if p_net >= 0 %}
+                            <span class="text-emerald-400">+₹{{ p_net }}</span>
+                            {% else %}
+                            <span class="text-rose-500">-₹{{ p_net | abs }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TRANSACTION LEDGER -->
+    <div class="glass p-8 rounded-[32px] border border-white/5 shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="cinzel text-2xl font-bold text-white">Transaction History</h3>
+            <span class="text-[9px] text-gray-500 uppercase tracking-widest font-mono font-bold">Newest First</span>
+        </div>
+        
+        {% if history %}
+        <div class="space-y-4">
+            {% for item in history | reverse %}
+            <div class="flex justify-between items-center p-4 rounded-2xl bg-[#05070d]/50 border border-white/5 hover:border-white/10 transition-all">
+                <div class="flex items-center gap-4">
+                    {% if item is mapping %}
+                        {% if item.type == 'buyin' %}
+                        <!-- Buyin Icon (Inbound) -->
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 17l-4 4m0 0l-4-4m4 4V3"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-white text-sm font-bold block">Buy-In</span>
+                            <span class="text-gray-500 text-[10px] font-mono block mt-0.5">{{ item.timestamp }}</span>
+                        </div>
+                        {% else %}
+                        <!-- Cashout Icon (Outbound) -->
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7l4-4m0 0l4-4m-4-4v18"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-white text-sm font-bold block">Cash-Out</span>
+                            <span class="text-gray-500 text-[10px] font-mono block mt-0.5">{{ item.timestamp }}</span>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <!-- Legacy Fallback -->
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 17l-4 4m0 0l-4-4m4 4V3"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-gray-300 text-sm font-medium block">Buy-In (Legacy)</span>
+                            <span class="text-gray-500 text-[10px] font-mono block mt-0.5">N/A</span>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    {% if item is mapping %}
+                        {% if item.type == 'buyin' %}
+                        <span class="text-emerald-400 font-bold text-lg font-mono">+₹{{ item.amount }}</span>
+                        {% else %}
+                        <span class="text-blue-400 font-bold text-lg font-mono">₹{{ item.amount }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="text-emerald-400/80 font-bold text-lg font-mono">+₹{{ item }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <p class="text-gray-500 text-sm">No transactions logged yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- WEBSOCKET REAL-TIME SYNC -->
+<script>
+    (function() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/live-game/{{ code }}`;
+        
+        function connectWS() {
+            const socket = new WebSocket(wsUrl);
+            
+            socket.onmessage = function(event) {
+                if (event.data === "update") {
+                    console.log("Real-time update received! Reloading dashboard...");
+                    window.location.reload();
+                }
+            };
+            
+            socket.onclose = function() {
+                console.log("WebSocket connection closed. Reconnecting in 3s...");
+                setTimeout(connectWS, 3000);
+            };
+            
+            socket.onerror = function(err) {
+                console.error("WebSocket error:", err);
+                socket.close();
+            };
+        }
+        
+        connectWS();
+    })();
+</script>
+
+{% endblock %}
