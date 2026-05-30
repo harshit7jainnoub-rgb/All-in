@@ -1,0 +1,7 @@
+{
+    "gateway": "fast2sms",
+    "twilio_account_sid": "",
+    "twilio_auth_token": "",
+    "twilio_from_number": "",
+    "fast2sms_api_key": ""
+}

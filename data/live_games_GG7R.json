@@ -1,0 +1,36 @@
+[
+    {
+        "code": "0B3T",
+        "name": "Man",
+        "status": "active",
+        "players": [
+            {
+                "name": "Harh",
+                "buyin": 500,
+                "cashout": 1500,
+                "history": [
+                    {
+                        "type": "buyin",
+                        "amount": 500,
+                        "timestamp": "2026-05-30 18:30"
+                    },
+                    {
+                        "type": "cashout",
+                        "amount": 1500,
+                        "timestamp": "2026-05-30 18:31"
+                    }
+                ],
+                "token": "HPVZ6DM7"
+            }
+        ],
+        "buyin_requests": [
+            {
+                "id": "req_x3oxl9eu",
+                "player_name": "Harh",
+                "amount": 500,
+                "status": "approved",
+                "timestamp": "2026-05-30 18:30"
+            }
+        ]
+    }
+]
