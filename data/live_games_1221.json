@@ -1,0 +1,48 @@
+[
+    {
+        "code": "EEZG",
+        "name": "New",
+        "status": "active",
+        "players": [
+            {
+                "name": "Harshit",
+                "buyin": 5500,
+                "cashout": 2500,
+                "history": [
+                    {
+                        "type": "buyin",
+                        "amount": 2500,
+                        "timestamp": "2026-06-01 10:14"
+                    },
+                    {
+                        "type": "cashout",
+                        "amount": 2500,
+                        "timestamp": "2026-06-01 10:14"
+                    },
+                    {
+                        "type": "buyin",
+                        "amount": 3000,
+                        "timestamp": "2026-06-01 10:14"
+                    }
+                ],
+                "token": "1H4HIPP0"
+            }
+        ],
+        "buyin_requests": [
+            {
+                "id": "req_r66whnan",
+                "player_name": "Harshit",
+                "amount": 2500,
+                "status": "approved",
+                "timestamp": "2026-06-01 10:14"
+            },
+            {
+                "id": "req_5bbzjsqq",
+                "player_name": "Harshit",
+                "amount": 3000,
+                "status": "approved",
+                "timestamp": "2026-06-01 10:14"
+            }
+        ]
+    }
+]
